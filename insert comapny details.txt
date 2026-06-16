@@ -1,0 +1,53 @@
+*&---------------------------------------------------------------------*
+*& Report ZINSERT_COM_DETAILS
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zinsert_com_details.
+
+TABLES: zcompany_detail.
+
+TYPES: BEGIN OF st_insert_company,
+         mandt    TYPE zcompany_detail-mandt,
+         com_id   TYPE zcompany_detail-com_id,
+         com_name TYPE zcompany_detail-com_name,
+         location TYPE zcompany_detail-location,
+         mail     TYPE zcompany_detail-mail,
+         contact  TYPE zcompany_detail-contact,
+       END OF st_insert_company.
+
+DATA: lt_com   TYPE TABLE OF st_insert_company,
+      ls_com   TYPE st_insert_company,
+      lv_lines TYPE i.
+
+FORM insert_company_detail.
+
+  CLEAR ls_com.
+  ls_com-mandt    = sy-mandt.
+  ls_com-com_id   = '4'.
+  ls_com-com_name = 'accenture'.
+  ls_com-location = 'chennai'.
+  ls_com-mail     = 'acc2@gmail.com'.
+  ls_com-contact  = '9234789523'.
+
+  APPEND ls_com TO lt_com.
+
+  INSERT zcompany_detail FROM TABLE lt_com.
+
+  IF sy-subrc = 0.
+    lv_lines = lines( lt_com ).
+    COMMIT WORK.
+    WRITE: / 'Records Inserted Successfully:', lv_lines.
+
+  ELSEIF sy-subrc = 4.
+    WRITE: / 'Duplicate Key Found. Record Not Inserted.'.
+
+  ELSE.
+    ROLLBACK WORK.
+    WRITE: / 'Insert Failed. SY-SUBRC =', sy-subrc.
+  ENDIF.
+
+ENDFORM.
+
+START-OF-SELECTION.
+  PERFORM insert_company_detail.
